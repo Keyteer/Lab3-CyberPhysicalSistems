@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
 import sqlite3
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 # Nombre del archivo de base de datos
 DB_PATH = "sensors.db"
 
 # Función para mostrar las lecturas de los últimos 10 minutos
 def mostrar_lecturas_recientes(conn):
-    tiempo_limite = datetime.utcnow() - timedelta(minutes=10)
+    tiempo_limite = datetime.now(timezone.utc) - timedelta(minutes=10)
     cursor = conn.cursor()
 
     cursor.execute("""
@@ -34,7 +34,7 @@ def mostrar_lecturas_recientes(conn):
 
 # Función para mostrar el promedio por minuto
 def mostrar_promedios_por_minuto(conn):
-    tiempo_limite = datetime.utcnow() - timedelta(minutes=10)
+    tiempo_limite = datetime.now(timezone.utc) - timedelta(minutes=10)
     cursor = conn.cursor()
 
     cursor.execute("""
