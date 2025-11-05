@@ -1,75 +1,106 @@
 #!/usr/bin/env python3
-import sqlite3, time, random, argparse
-from datetime import datetime
+import os, time, sqlite3, random, argparse
+from datetime import datetime, timezone
 
-
+# --- Configuración ---
 DB_PATH = "sensors.db"
-SIMULATION = True  # True para simular lecturas, False si usas hardware real
+SENSORS = [
+    {"id": "dht11-temp", "type": "temperature"},
+    {"id": "dht11-hum",  "type": "humidity"},
+]
 
-# --- Lectura del sensor ---
-def read_sensor():
-    """
-    Simula la lectura de un sensor de temperatura/humedad.
-    En una Raspberry real podrías usar adafruit_dht o gpiozero.
-    """
-    if SIMULATION:
-        temp = 22.0 + random.uniform(-1.5, 1.5)
-        hum = 50.0 + random.uniform(-5, 5)
-    else:
-        # Ejemplo para sensor DHT11 real:
-        # dht = adafruit_dht.DHT11(board.D4)
-        # temp = dht.temperature
-        # hum = dht.humidity
-        temp, hum = None, None
-    return temp, hum
+# Por defecto: usa hardware real, a menos que SIM=1
+SIMULATION = os.environ.get("SIM", "0") == "1"
+
+# --- Intentar usar el sensor real ---
+try:
+    import adafruit_dht
+    import board
+    dht_device = adafruit_dht.DHT11(board.D4)
+except Exception as e:
+    print("No se pudo inicializar DHT11, se usará modo simulación.")
+    SIMULATION = True
+
+# --- Lecturas reales ---
+def read_temp_hw():
+    try:
+        return dht_device.temperature
+    except Exception as e:
+        print(f"Error leyendo temperatura: {e}")
+        return None
+
+def read_hum_hw():
+    try:
+        return dht_device.humidity
+    except Exception as e:
+        print(f"Error leyendo humedad: {e}")
+        return None
+
+# --- Simulación (valores aproximados del DHT11) ---
+def read_temp_sim():
+    return 22.0 + random.uniform(-2.0, 2.0)  # 20–24°C aprox
+
+def read_hum_sim():
+    return 50.0 + random.uniform(-5.0, 5.0)  # 45–55% aprox
+
+def read_sensor(s):
+    if s["type"] == "temperature":
+        return read_temp_hw() if not SIMULATION else read_temp_sim()
+    elif s["type"] == "humidity":
+        return read_hum_hw() if not SIMULATION else read_hum_sim()
+    return None
 
 # --- Base de datos ---
 def init_db(conn):
     cur = conn.cursor()
-    cur.execute("""
-        CREATE TABLE IF NOT EXISTS readings (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            ts TEXT NOT NULL,
-            sensor TEXT NOT NULL,
-            value REAL NOT NULL
-        )
-    """)
+    cur.execute("""CREATE TABLE IF NOT EXISTS sensor(
+        id TEXT PRIMARY KEY, type TEXT)""")
+    cur.execute("""CREATE TABLE IF NOT EXISTS reading(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        ts TEXT NOT NULL,
+        sensor_id TEXT NOT NULL,
+        value REAL NOT NULL,
+        FOREIGN KEY(sensor_id) REFERENCES sensor(id))""")
+    cur.execute("CREATE INDEX IF NOT EXISTS ix_reading_sensor_ts ON reading(sensor_id, ts)")
+    for s in SENSORS:
+        cur.execute("INSERT OR IGNORE INTO sensor(id, type) VALUES(?, ?)", (s["id"], s["type"]))
     conn.commit()
 
-def insert_reading(conn, sensor, value):
-    conn.execute(
-        "INSERT INTO readings(ts, sensor, value) VALUES(?,?,?)",
-        (datetime.utcnow().isoformat(), sensor, float(value))
-    )
-    conn.commit()
+def insert_reading(conn, sensor_id, value):
+    if value is not None:
+        conn.execute("INSERT INTO reading(ts, sensor_id, value) VALUES (?, ?, ?)",
+                     (datetime.now(timezone.utc).isoformat(), sensor_id, float(value)))
+        conn.commit()
 
 # --- Bucle principal ---
 def main(period=10.0, duration=600):
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     init_db(conn)
     t0 = time.time()
 
-    print(f"[INFO] Adquisición iniciada. Guardando datos cada {period}s por {duration}s.")
+    print(f"[INFO] Iniciando adquisición cada {period}s por {duration}s.")
+    if SIMULATION:
+        print("[INFO] Modo simulación activado.\n")
 
     try:
         while time.time() - t0 < duration:
-            temp, hum = read_sensor()
-            if temp is not None and hum is not None:
-                insert_reading(conn, "temperature", temp)
-                insert_reading(conn, "humidity", hum)
-                print(f"Temp: {temp:.1f} °C | Hum: {hum:.1f} %")
-            else:
-                print("[WARN] Lectura inválida, se omite muestra.")
+            for s in SENSORS:
+                valor = read_sensor(s)
+                if valor is not None:
+                    insert_reading(conn, s["id"], valor)
+                    print(f"{s['id']} -> {valor:.2f}")
+                else:
+                    print(f"No se pudo leer {s['id']}")
             time.sleep(period)
     except KeyboardInterrupt:
-        print("\n[INFO] Adquisición interrumpida por el usuario.")
+        print("\n[INFO] Interrumpido por el usuario.")
     finally:
         conn.close()
         print("[INFO] Base de datos cerrada correctamente.")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Adquisición de temperatura y humedad")
-    parser.add_argument("--period", type=float, default=10.0, help="Periodo de muestreo (s)")
-    parser.add_argument("--duration", type=int, default=600, help="Duración total (s)")
-    args = parser.parse_args()
+    p = argparse.ArgumentParser()
+    p.add_argument("--period", type=float, default=10.0, help="Intervalo entre lecturas (segundos)")
+    p.add_argument("--duration", type=int, default=600, help="Duración total de la adquisición (segundos)")
+    args = p.parse_args()
     main(args.period, args.duration)
