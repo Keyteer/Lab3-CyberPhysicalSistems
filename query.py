@@ -7,12 +7,20 @@ DB_PATH = "sensors.db"
 def get_recent_readings(minutes=10):
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
-    since = (datetime.now(timezone.utc) - timedelta(minutes=minutes)).isoformat()
-    
-    cur.execute("""
-        SELECT sensor_id, ts, value 
-        FROM reading 
-        WHERE ts >= ? 
+    cur.execute("SELECT MAX(ts) FROM reading")
+    last_ts = cur.fetchone()[0]
+    if not last_ts:
+        conn.close()
+        return []
+
+    last_dt = datetime.fromisoformat(last_ts)
+    since = (last_dt - timedelta(minutes=minutes)).isoformat()
+
+    cur.execute(
+        """
+        SELECT sensor_id, ts, value
+        FROM reading
+        WHERE ts >= ?
         ORDER BY ts DESC
     """, (since,))
     
@@ -23,9 +31,17 @@ def get_recent_readings(minutes=10):
 def get_minute_averages(minutes=10):
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
-    since = (datetime.now(timezone.utc) - timedelta(minutes=minutes)).isoformat()
-    
-    cur.execute("""
+    cur.execute("SELECT MAX(ts) FROM reading")
+    last_ts = cur.fetchone()[0]
+    if not last_ts:
+        conn.close()
+        return []
+
+    last_dt = datetime.fromisoformat(last_ts)
+    since = (last_dt - timedelta(minutes=minutes)).isoformat()
+
+    cur.execute(
+        """
         SELECT 
             sensor_id,
             strftime('%Y-%m-%d %H:%M:00', ts) as minute,
