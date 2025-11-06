@@ -78,9 +78,9 @@ def main(period=10.0, duration=600):
     init_db(conn)
     t0 = time.time()
 
-    print(f"[INFO] Iniciando adquisición cada {period}s por {duration}s.")
+    print(f"Iniciando adquisición cada {period}s por {duration}s.")
     if SIMULATION:
-        print("[INFO] Modo simulación activado.\n")
+        print("Modo simulación activado.\n")
 
     try:
         while time.time() - t0 < duration:
@@ -93,10 +93,10 @@ def main(period=10.0, duration=600):
                     print(f"No se pudo leer {s['id']}")
             time.sleep(period)
     except KeyboardInterrupt:
-        print("\n[INFO] Interrumpido por el usuario.")
+        print("\n Interrumpido por el usuario.")
     finally:
         conn.close()
-        print("[INFO] Base de datos cerrada correctamente.")
+        print("Base de datos cerrada correctamente.")
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()

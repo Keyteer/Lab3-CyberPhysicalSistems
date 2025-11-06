@@ -29,7 +29,7 @@ options:
 ## Execution examples:
 ```console
 $ python getData.py --duration 60
-[INFO] Iniciando adquisición cada 10.0s por 60s.
+Iniciando adquisición cada 10.0s por 60s.
 dht11-temp -> 21.80
 dht11-hum -> 53.00
 dht11-temp -> 21.80
@@ -41,8 +41,8 @@ dht11-hum -> 53.00
 ^Creceived SIGINT
 
 
-[INFO] Interrumpido por el usuario.
-[INFO] Base de datos cerrada correctamente.
+Interrumpido por el usuario.
+Base de datos cerrada correctamente.
 ```
 
 ```console
