@@ -18,7 +18,7 @@ try:
     import board
     dht_device = adafruit_dht.DHT11(board.D4)
 except Exception as e:
-    print("No se pudo inicializar DHT11, se usará modo simulación.")
+    print("No se pudo inicializar DHT11, se usará modo simulación. Error:", e)
     SIMULATION = True
 
 # --- Lecturas reales ---

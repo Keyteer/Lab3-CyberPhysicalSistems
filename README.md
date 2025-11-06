@@ -1,1 +1,1 @@
-# Smart sensor and logger simulation on Raspberry Pi Enviroment
+# Smart sensor and logger on Raspberry Pi Enviroment
