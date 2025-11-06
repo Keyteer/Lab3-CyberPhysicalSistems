@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import sqlite3
 from datetime import datetime, timedelta, timezone
 
@@ -57,13 +58,16 @@ def get_minute_averages(minutes=10):
     return rows
 
 def main():
-    print("=== Últimas lecturas (10 minutos) ===")
-    readings = get_recent_readings(10)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--minutes", type=int, default=10, help="Número de minutos para consultar")
+    args = parser.parse_args()
+    print(f"=== Últimas lecturas ({args.minutes} minutos) ===")
+    readings = get_recent_readings(args.minutes)
     for sensor, ts, value in readings:
         print(f"{sensor:12} {ts} -> {value:.2f}")
     
-    print("\n=== Promedios por minuto (10 minutos) ===")
-    averages = get_minute_averages(10)
+    print(f"\n=== Promedios por minuto ({args.minutes} minutos) ===")
+    averages = get_minute_averages(args.minutes)
     for sensor, minute, avg in averages:
         print(f"{sensor:12} {minute} -> {avg:.2f}")
 
