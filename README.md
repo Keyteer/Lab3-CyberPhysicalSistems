@@ -6,6 +6,25 @@
 - Pedro Palacios
 - Franco Vidal
 
+## Description
+Este proyecto consiste en la implementación de un sistema básico de adquisición y consulta de los datos humedad relativa y temperatura a través de un sensor DHT11 conectado a una Raspberry Pi. Los datos junto con su timestap se guardan en una base de datos mediante la librería sqlite3 y se genera el archivo sensors.db.
+El sistema cuenta, con dos modos (simulación y real), el modo simulación genera valores aleatorios para los parámetros temperatura y humedad dentro de los rangos establecidos en el programa, dicho modo se puede activar al inicio de modo manual y además se usa en reemplazo del modo real cuando falla. El modo real lee los datos de humedad y tiempo directamente desde el sensor DHT11 mediante la librería `adafruit_dht`. Además, se garantiza el sistema garantiza que al ocurrir interrupciones los datos se guarden de todas formas sin interrumpir el programa.
+
+Funciones de los archivos del sistema:
+
+1. **`getData.py`**
+   - Por defecto al ejecutar se activa el modo real.   
+   - Lee los datos del sensor DHT11 cada cierto intervalo (por defecto cada 10 segundos).  
+   - Guarda los datos en la base de datos (sensors.db).  
+   - Si ocurre un error de lectura, el programa no se detiene.  
+   - Si no se detecta el sensor, entra en modo simulación automáticamente.
+
+2. **`query.py`**  
+   - Consulta los datos guardados en la base de datos (sensors.db).  
+   - Muestra las lecturas de los últimos minutos (por defecto 10).  
+   - Calcula el promedio por minuto de temperatura y humedad. 
+
+
 ## Usage:
 
 ```
