@@ -13,16 +13,16 @@ El sistema cuenta, con dos modos (simulación y real), el modo simulación gener
 Funciones de los archivos del sistema:
 
 1. **`getData.py`**
-   - Por defecto al ejecutar se activa el modo real.   
+   - Por defecto al ejecutar se activa el modo real (uso del HW).   
    - Lee los datos del sensor DHT11 cada cierto intervalo (por defecto cada 10 segundos).  
    - Guarda los datos en la base de datos (sensors.db).  
    - Si ocurre un error de lectura, el programa no se detiene.  
-   - Si no se detecta el sensor, entra en modo simulación automáticamente.
+   - Si no se detecta el sensor, entra en modo simulación.
 
 2. **`query.py`**  
    - Consulta los datos guardados en la base de datos (sensors.db).  
-   - Muestra las lecturas de los últimos minutos (por defecto 10).  
-   - Calcula el promedio por minuto de temperatura y humedad. 
+   - Muestra las lecturas (temperatura y humedad) de los últimos minutos (por defecto 10) en orden descendente en función de su timestap.  
+   - Calcula el promedio por minuto de los valores para la temperatura y humedad. 
 
 
 ## Usage:
