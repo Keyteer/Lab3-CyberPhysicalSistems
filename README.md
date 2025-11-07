@@ -8,7 +8,7 @@
 
 ## Description
 Este proyecto consiste en la implementación de un sistema básico de adquisición y consulta de los datos humedad relativa y temperatura a través de un sensor DHT11 conectado a una Raspberry Pi. Los datos junto con su timestap se guardan en una base de datos mediante la librería sqlite3 y se genera el archivo sensors.db.
-El sistema cuenta, con dos modos (simulación y real), el modo simulación genera valores aleatorios para los parámetros temperatura y humedad dentro de los rangos establecidos en el programa, dicho modo se puede activar al inicio de modo manual y además se usa en reemplazo del modo real cuando falla. El modo real lee los datos de humedad y tiempo directamente desde el sensor DHT11 mediante la librería `adafruit_dht`. Además, se garantiza el sistema garantiza que al ocurrir interrupciones los datos se guarden de todas formas sin interrumpir el programa.
+El sistema cuenta, con dos modos (simulación y real), el modo simulación genera valores aleatorios para los parámetros temperatura y humedad dentro de los rangos establecidos en el programa, dicho modo se puede activar al inicio de modo manual y además se usa en reemplazo del modo real cuando falla. El modo real lee los datos de humedad y tiempo directamente desde el sensor DHT11 mediante la librería `adafruit_dht`. Además, el sistema garantiza que al ocurrir interrupciones los datos se guarden de todas formas sin interrumpir el programa.
 
 Funciones de los archivos del sistema:
 
@@ -202,4 +202,5 @@ dht11-temp   2025-11-06 21:59:00 -> 21.80
 dht11-temp   2025-11-06 21:58:00 -> 21.80
 dht11-temp   2025-11-06 21:57:00 -> 21.80
 dht11-temp   2025-11-06 21:56:00 -> 21.80
+
 ```
