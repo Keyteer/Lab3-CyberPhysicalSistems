@@ -12,7 +12,7 @@ SENSORS = [
 # Por defecto: usa hardware real, a menos que SIM=1
 SIMULATION = os.environ.get("SIM", "0") == "1"
 
-# --- Intentar usar el sensor real ---
+# --- Intentar usar el sensor  ---
 try:
     import adafruit_dht
     import board
@@ -21,7 +21,7 @@ except Exception as e:
     print("No se pudo inicializar DHT11, se usará modo simulación. Error:", e)
     SIMULATION = True
 
-# --- Lecturas reales ---
+# --- Modo real (datos reales obtenidos del sensor) ---
 def read_temp_hw():
     try:
         return dht_device.temperature
@@ -36,12 +36,12 @@ def read_hum_hw():
         print(f"Error leyendo humedad: {e}")
         return None
 
-# --- Simulación (valores aproximados del DHT11) ---
+# --- Modo simulación (genera valores aleatorios) ---
 def read_temp_sim():
-    return 22.0 + random.uniform(-2.0, 2.0)  # 20–24°C aprox
+    return 22.0 + random.uniform(-2.0, 2.0)  
 
 def read_hum_sim():
-    return 50.0 + random.uniform(-5.0, 5.0)  # 45–55% aprox
+    return 50.0 + random.uniform(-5.0, 5.0)  
 
 def read_sensor(s):
     if s["type"] == "temperature":
@@ -72,7 +72,7 @@ def insert_reading(conn, sensor_id, value):
                      (datetime.now(timezone.utc).isoformat(), sensor_id, float(value)))
         conn.commit()
 
-# --- Bucle principal ---
+# --- main ---
 def main(period=10.0, duration=600):
     conn = sqlite3.connect(DB_PATH, check_same_thread=False)
     init_db(conn)
